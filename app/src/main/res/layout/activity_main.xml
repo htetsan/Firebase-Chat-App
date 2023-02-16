@@ -29,6 +29,7 @@
             android:layout_weight="1"
             android:layout_margin="10dp"
             android:layout_gravity="center"
+            android:importantForAutofill="no"
             android:padding="10dp"
             android:background="@drawable/edit_text_shadow"
             android:hint="Say something..."

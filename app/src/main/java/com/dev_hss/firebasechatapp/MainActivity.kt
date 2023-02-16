@@ -1,22 +1,33 @@
 package com.dev_hss.firebasechatapp
 
+import android.annotation.TargetApi
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dev_hss.firebasechatapp.databinding.ActivityMainBinding
+import com.dev_hss.firebasechatapp.model.FriendlyMessage
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var manager: LinearLayoutManager
+    private lateinit var db: FirebaseDatabase
+    private lateinit var adapter: FriendlyMessageAdapter
 
     // Firebase instance variables
     private lateinit var auth: FirebaseAuth
@@ -27,15 +38,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        //setContentView(R.layout.activity_main)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // When running in debug mode, connect to the Firebase Emulator Suite.
-        // "10.0.2.2" is a special IP address which allows the Android Emulator
-        // to connect to "localhost" on the host computer. The port values (9xxx)
-        // must match the values defined in the firebase.json file.
 //        if (BuildConfig.DEBUG) {
 //            Firebase.database.useEmulator("10.0.2.2", 9000)
 //            Firebase.auth.useEmulator("10.0.2.2", 9099)
@@ -44,15 +51,31 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize Firebase Auth and check if the user is signed in
         auth = Firebase.auth
-        if (auth.currentUser != null) {
-            // Not signed in, launch the Sign In activity
+        if (auth.currentUser == null) {
             startActivity(SignInActivity.newIntent(this))
             finish()
             return
         }
 
         // Initialize Realtime Database and FirebaseRecyclerAdapter
-        // TODO: implement
+        db = Firebase.database
+        val messagesRef = db.reference.child(MESSAGES_CHILD)
+
+        val options = FirebaseRecyclerOptions.Builder<FriendlyMessage>()
+            .setQuery(messagesRef, FriendlyMessage::class.java).build()
+
+        adapter = FriendlyMessageAdapter(options, getUserName())
+        binding.progressBar.visibility = ProgressBar.INVISIBLE
+        manager = LinearLayoutManager(this)
+        manager.stackFromEnd = true
+        binding.messageRecyclerView.layoutManager = manager
+        binding.messageRecyclerView.adapter = adapter
+
+        // Scroll down when a new message arrives
+        // See MyScrollToBottomObserver for details
+        adapter.registerAdapterDataObserver(
+            MyScrollToBottomObserver(binding.messageRecyclerView, adapter, manager)
+        )
 
         // Disable the send button when there's no text in the input field
         // See MyButtonObserver for details
@@ -71,7 +94,6 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         // Check if user is signed in.
         if (auth.currentUser == null) {
-            // Not signed in, launch the Sign In activity
             startActivity(SignInActivity.newIntent(this))
             finish()
             return
@@ -79,10 +101,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     public override fun onPause() {
+        adapter.stopListening()
         super.onPause()
     }
 
     public override fun onResume() {
+        adapter.startListening()
         super.onResume()
     }
 

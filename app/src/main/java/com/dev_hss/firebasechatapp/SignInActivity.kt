@@ -15,10 +15,13 @@
  */
 package com.dev_hss.firebasechatapp
 
+import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
@@ -45,14 +48,20 @@ class SignInActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // This codelab uses View Binding
-        // See: https://developer.android.com/topic/libraries/view-binding
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Initialize FirebaseAuth
         auth = Firebase.auth
+
+        //disableAutofill()
     }
+
+
+//    @TargetApi(Build.VERSION_CODES.O)
+//    private fun disableAutofill() {
+//        window.decorView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+//    }
 
     public override fun onStart() {
         super.onStart()
@@ -102,6 +111,7 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun goToMainActivity() {
+        Toast.makeText(this, "Sign in Successful", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
