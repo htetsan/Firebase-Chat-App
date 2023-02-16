@@ -92,10 +92,9 @@ class FriendlyMessageAdapter(
         }
     }
 
-    inner class ImageMessageViewHolder(private val binding: ImageMessageBinding) :
-        ViewHolder(binding.root) {
+    inner class ImageMessageViewHolder(private val binding: ImageMessageBinding) : ViewHolder(binding.root) {
         fun bind(item: FriendlyMessage) {
-            loadImageIntoView(binding.messageImageView, item.imageUrl!!)
+            loadImageIntoView(binding.messageImageView, item.imageUrl!!, false)
 
             binding.messengerTextView.text = item.name ?: ANONYMOUS
             if (item.photoUrl != null) {

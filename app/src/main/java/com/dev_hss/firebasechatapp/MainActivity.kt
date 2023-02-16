@@ -1,12 +1,10 @@
 package com.dev_hss.firebasechatapp
 
-import android.annotation.TargetApi
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,16 +14,19 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var wrapContentLinearLayoutManager: WrapContentLinearLayoutManager
     private lateinit var binding: ActivityMainBinding
-    private lateinit var manager: LinearLayoutManager
+//    private lateinit var manager: LinearLayoutManager
     private lateinit var db: FirebaseDatabase
     private lateinit var adapter: FriendlyMessageAdapter
 
@@ -66,15 +67,17 @@ class MainActivity : AppCompatActivity() {
 
         adapter = FriendlyMessageAdapter(options, getUserName())
         binding.progressBar.visibility = ProgressBar.INVISIBLE
-        manager = LinearLayoutManager(this)
-        manager.stackFromEnd = true
-        binding.messageRecyclerView.layoutManager = manager
+
+        wrapContentLinearLayoutManager =
+            WrapContentLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        wrapContentLinearLayoutManager.stackFromEnd = true
+        binding.messageRecyclerView.layoutManager = wrapContentLinearLayoutManager
         binding.messageRecyclerView.adapter = adapter
 
         // Scroll down when a new message arrives
         // See MyScrollToBottomObserver for details
         adapter.registerAdapterDataObserver(
-            MyScrollToBottomObserver(binding.messageRecyclerView, adapter, manager)
+            MyScrollToBottomObserver(binding.messageRecyclerView, adapter, wrapContentLinearLayoutManager)
         )
 
         // Disable the send button when there's no text in the input field
@@ -136,12 +139,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onImageSelected(uri: Uri) {
-        // TODO: implement
+        Log.d(TAG, "Uri: $uri")
+        val user = auth.currentUser
+        val tempMessage = FriendlyMessage(null, getUserName(), getPhotoUrl(), LOADING_IMAGE_URL)
+        db.reference.child(MESSAGES_CHILD).push().setValue(tempMessage,
+                DatabaseReference.CompletionListener { databaseError, databaseReference ->
+                    if (databaseError != null) {
+                        Log.w(
+                            TAG, "Unable to write message to database.", databaseError.toException()
+                        )
+                        return@CompletionListener
+                    }
+
+                    // Build a StorageReference and then upload the file
+                    val key = databaseReference.key
+                    val storageReference = Firebase.storage.getReference(user!!.uid).child(key!!)
+                        .child(uri.lastPathSegment!!)
+                    putImageInStorage(storageReference, uri, key)
+                })
     }
 
     private fun putImageInStorage(storageReference: StorageReference, uri: Uri, key: String?) {
+
         // Upload the image to Cloud Storage
-        // TODO: implement
+        storageReference.putFile(uri).addOnSuccessListener(
+                this
+            ) { taskSnapshot -> // After the image loads, get a public downloadUrl for the image
+                // and add it to the message.
+                taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener { uri ->
+                        val friendlyMessage =
+                            FriendlyMessage(null, getUserName(), getPhotoUrl(), uri.toString())
+                        db.reference.child(MESSAGES_CHILD).child(key!!).setValue(friendlyMessage)
+                    }
+            }.addOnFailureListener(this) { e ->
+                Log.w(
+                    TAG, "Image upload task was unsuccessful.", e
+                )
+            }
     }
 
     private fun signOut() {
