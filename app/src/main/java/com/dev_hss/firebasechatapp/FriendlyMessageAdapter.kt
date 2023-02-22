@@ -16,6 +16,7 @@
 package com.dev_hss.firebasechatapp
 
 import android.graphics.Color
+import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -49,8 +50,8 @@ class FriendlyMessageAdapter(
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             VIEW_TYPE_OTHER_TEXT -> {
-                val view = inflater.inflate(R.layout.other_message, parent, false)
-                val binding = OtherMessageBinding.bind(view)
+                val view = inflater.inflate(R.layout.message, parent, false)
+                val binding = MessageBinding.bind(view)
                 MessageViewHolder(binding)
             }
             VIEW_TYPE_OTHER_IMAGE -> {
@@ -79,7 +80,7 @@ class FriendlyMessageAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: FriendlyMessage) {
         if (options.snapshots.size > 0) {
             if (options.snapshots[position].text != null) {
-                (holder as OtherMessageViewHolder).bind(model)
+                (holder as MessageViewHolder).bind(model)
             } else {
                 (holder as ImageMessageViewHolder).bind(model)
             }
@@ -98,13 +99,13 @@ class FriendlyMessageAdapter(
         //return if (options.snapshots[position].text != null) VIEW_TYPE_TEXT else VIEW_TYPE_IMAGE
     }
 
-    inner class OtherMessageViewHolder(private val binding: OtherMessageBinding) : ViewHolder(binding.root) {
+    inner class MessageViewHolder(private val binding: MessageBinding) : ViewHolder(binding.root) {
         fun bind(item: FriendlyMessage) {
 
-            binding.txtOtherMessage.text = item.text
-            setTextColor(item.name, binding.txtOtherMessage)
+            binding.messageTextView.text = item.text
+            setTextColor(item.name, binding.messageTextView)
 
-            binding.txtOtherUser.text = item.name ?: ANONYMOUS
+            binding.messengerTextView.text = item.name ?: ANONYMOUS
             if (item.photoUrl != null) {
                 loadImageIntoView(binding.messengerImageView, item.photoUrl)
             } else {
