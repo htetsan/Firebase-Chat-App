@@ -1,15 +1,19 @@
 package com.dev_hss.firebasechatapp
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dev_hss.firebasechatapp.databinding.ActivityMainBinding
 import com.dev_hss.firebasechatapp.model.FriendlyMessage
+import com.dev_hss.firebasechatapp.model.UserAccountVO
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
@@ -20,13 +24,15 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var wrapContentLinearLayoutManager: WrapContentLinearLayoutManager
     private lateinit var binding: ActivityMainBinding
-//    private lateinit var manager: LinearLayoutManager
+
+    //    private lateinit var manager: LinearLayoutManager
     private lateinit var db: FirebaseDatabase
     private lateinit var adapter: FriendlyMessageAdapter
 
@@ -56,11 +62,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(SignInActivity.newIntent(this))
             finish()
             return
+        } else {
+            App.userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }.toString()
+            Toast.makeText(this, App.userId, Toast.LENGTH_SHORT).show()
+        }
+
+        db = Firebase.database
+        val accountRef = getUserId()?.let {
+            db.reference.child("users").child(it)
+        }
+
+        if (isCreateAccount) {
+            val userAccount = UserAccountVO(
+                getEmail(), getUserName(), getPhoneNumber()
+            )
+            getUserId()?.let {
+                db.reference.child(USERS_CHILD).child(it).setValue(userAccount)
+            }
         }
 
         // Initialize Realtime Database and FirebaseRecyclerAdapter
-        db = Firebase.database
-        val messagesRef = db.reference.child(MESSAGES_CHILD)
+        //val messagesRef = db.reference.child("chats/chat_id_1/messages")
+        val messagesRef = db.reference.child("chats").child("chat_id_1").child("messages")
 
         val options = FirebaseRecyclerOptions.Builder<FriendlyMessage>()
             .setQuery(messagesRef, FriendlyMessage::class.java).build()
@@ -77,29 +100,40 @@ class MainActivity : AppCompatActivity() {
         // Scroll down when a new message arrives
         // See MyScrollToBottomObserver for details
         adapter.registerAdapterDataObserver(
-            MyScrollToBottomObserver(binding.messageRecyclerView, adapter, wrapContentLinearLayoutManager)
+            MyScrollToBottomObserver(
+                binding.messageRecyclerView, adapter, wrapContentLinearLayoutManager
+            )
         )
+
 
         // Disable the send button when there's no text in the input field
         // See MyButtonObserver for details
         binding.messageEditText.addTextChangedListener(MyButtonObserver(binding.sendButton))
 
+
         // When the send button is clicked, send a text message
         binding.sendButton.setOnClickListener {
             val friendlyMessage = FriendlyMessage(
+                userId = getUserId(),
                 binding.messageEditText.text.toString(),
                 getUserName(),
                 getPhotoUrl(),
                 null /* no image */
             )
-            db.reference.child(MESSAGES_CHILD).push().setValue(friendlyMessage)
+            db.reference.child("chats").child("chat_id_1").child("messages")
+                .child(generateMessageId()).setValue(friendlyMessage)
             binding.messageEditText.setText("")
         }
+
 
         // When the image button is clicked, launch the image picker
         binding.addMessageImageView.setOnClickListener {
             openDocument.launch(arrayOf("image/*"))
         }
+    }
+
+    private fun generateMessageId(): String {
+        return UUID.randomUUID().toString()
     }
 
     public override fun onStart() {
@@ -109,6 +143,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(SignInActivity.newIntent(this))
             finish()
             return
+        } else {
+            App.userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }.toString()
+            Toast.makeText(this, App.userId, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -141,41 +178,43 @@ class MainActivity : AppCompatActivity() {
     private fun onImageSelected(uri: Uri) {
         Log.d(TAG, "Uri: $uri")
         val user = auth.currentUser
-        val tempMessage = FriendlyMessage(null, getUserName(), getPhotoUrl(), LOADING_IMAGE_URL)
-        db.reference.child(MESSAGES_CHILD).push().setValue(tempMessage,
-                DatabaseReference.CompletionListener { databaseError, databaseReference ->
-                    if (databaseError != null) {
-                        Log.w(
-                            TAG, "Unable to write message to database.", databaseError.toException()
-                        )
-                        return@CompletionListener
-                    }
+        val tempMessage =
+            FriendlyMessage(getUserId(), null, getUserName(), getPhotoUrl(), LOADING_IMAGE_URL)
+        db.reference.child(MESSAGES_CHILD).push().setValue(
+            tempMessage,
+            DatabaseReference.CompletionListener { databaseError, databaseReference ->
+                if (databaseError != null) {
+                    Log.w(
+                        TAG, "Unable to write message to database.", databaseError.toException()
+                    )
+                    return@CompletionListener
+                }
 
-                    // Build a StorageReference and then upload the file
-                    val key = databaseReference.key
-                    val storageReference = Firebase.storage.getReference(user!!.uid).child(key!!)
-                        .child(uri.lastPathSegment!!)
-                    putImageInStorage(storageReference, uri, key)
-                })
+                // Build a StorageReference and then upload the file
+                val key = databaseReference.key
+                val storageReference = Firebase.storage.getReference(user!!.uid).child(key!!)
+                    .child(uri.lastPathSegment!!)
+                putImageInStorage(storageReference, uri, key)
+            })
     }
 
     private fun putImageInStorage(storageReference: StorageReference, uri: Uri, key: String?) {
 
         // Upload the image to Cloud Storage
         storageReference.putFile(uri).addOnSuccessListener(
-                this
-            ) { taskSnapshot -> // After the image loads, get a public downloadUrl for the image
-                // and add it to the message.
-                taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener { uri ->
-                        val friendlyMessage =
-                            FriendlyMessage(null, getUserName(), getPhotoUrl(), uri.toString())
-                        db.reference.child(MESSAGES_CHILD).child(key!!).setValue(friendlyMessage)
-                    }
-            }.addOnFailureListener(this) { e ->
-                Log.w(
-                    TAG, "Image upload task was unsuccessful.", e
-                )
+            this
+        ) { taskSnapshot -> // After the image loads, get a public downloadUrl for the image
+            // and add it to the message.
+            taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener { uri ->
+                val friendlyMessage =
+                    FriendlyMessage(null, getUserName(), getPhotoUrl(), uri.toString())
+                db.reference.child(MESSAGES_CHILD).child(key!!).setValue(friendlyMessage)
             }
+        }.addOnFailureListener(this) { e ->
+            Log.w(
+                TAG, "Image upload task was unsuccessful.", e
+            )
+        }
     }
 
     private fun signOut() {
@@ -196,10 +235,58 @@ class MainActivity : AppCompatActivity() {
         } else ANONYMOUS
     }
 
+    private fun getEmail(): String? {
+        val user = auth.currentUser
+        return if (user != null) {
+            user.email
+        } else TEST_EMAIL
+    }
+
+    private fun getPhoneNumber(): String? {
+        val user = auth.currentUser
+        return if (user != null) {
+            user.phoneNumber
+        } else TEST_PHONE
+    }
+
+    fun generateChatId(userId1: String, userId2: String): String {
+        val sortedUserIds = listOf(userId1, userId2).sorted()
+        return sortedUserIds.joinToString("_")
+    }
+
+    private fun createUserIdWithEmail(email: String): String {
+        return email.replace(".", "_")
+    }
+
+
+    private fun getUserId(): String? {
+        return if (auth.currentUser != null) {
+            val userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }
+            userId
+        } else ANONYMOUS
+    }
+
+
     companion object {
+        const val userId1 = "user_id_1"
+        val userId2 = "user_id_2"
+        //val chatId = generateChatId(userId1, userId2)
+
         private const val TAG = "MainActivity"
         const val MESSAGES_CHILD = "messages"
+        const val USERS_CHILD = "users"
+        const val TEST_EMAIL = "htetsoesan8888@gmail.com"
+        const val TEST_PHONE = "09984458969"
         const val ANONYMOUS = "anonymous"
+        var isCreateAccount = false
+
         private const val LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif"
+
+        fun newIntent(context: Context, createAccount: Boolean): Intent {
+            isCreateAccount = createAccount
+            val intent = Intent(context, MainActivity::class.java)
+            return intent
+        }
+
     }
 }

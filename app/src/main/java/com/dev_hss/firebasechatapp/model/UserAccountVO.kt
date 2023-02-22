@@ -15,10 +15,8 @@
  */
 package com.dev_hss.firebasechatapp.model
 
-data class FriendlyMessage(
-    val userId: String? = null,
-    val text: String? = null,
+data class UserAccountVO(
+    val email: String? = null,
     val name: String? = null,
-    val photoUrl: String? = null,
-    val imageUrl: String? = null,
+    val phoneNumber: String? = null
 )

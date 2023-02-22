@@ -24,10 +24,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.dev_hss.firebasechatapp.FriendlyMessageAdapter.Companion.VIEW_TYPE_OTHER_TEXT
 import com.dev_hss.firebasechatapp.MainActivity.Companion.ANONYMOUS
 import com.dev_hss.firebasechatapp.R
 import com.dev_hss.firebasechatapp.databinding.ImageMessageBinding
 import com.dev_hss.firebasechatapp.databinding.MessageBinding
+import com.dev_hss.firebasechatapp.databinding.MyImageMessageBinding
+import com.dev_hss.firebasechatapp.databinding.MyMessageBinding
+import com.dev_hss.firebasechatapp.databinding.OtherMessageBinding
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.dev_hss.firebasechatapp.model.FriendlyMessage
@@ -43,36 +47,64 @@ class FriendlyMessageAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return if (viewType == VIEW_TYPE_TEXT) {
-            val view = inflater.inflate(R.layout.message, parent, false)
-            val binding = MessageBinding.bind(view)
-            MessageViewHolder(binding)
-        } else {
-            val view = inflater.inflate(R.layout.image_message, parent, false)
-            val binding = ImageMessageBinding.bind(view)
-            ImageMessageViewHolder(binding)
+        return when (viewType) {
+            VIEW_TYPE_OTHER_TEXT -> {
+                val view = inflater.inflate(R.layout.other_message, parent, false)
+                val binding = OtherMessageBinding.bind(view)
+                MessageViewHolder(binding)
+            }
+            VIEW_TYPE_OTHER_IMAGE -> {
+                val view = inflater.inflate(R.layout.image_message, parent, false)
+                val binding = ImageMessageBinding.bind(view)
+                ImageMessageViewHolder(binding)
+            }
+            VIEW_TYPE_MY_TEXT -> {
+                val view = inflater.inflate(R.layout.my_message, parent, false)
+                val binding = MyMessageBinding.bind(view)
+                ImageMessageViewHolder(binding)
+            }
+            VIEW_TYPE_MY_IMAGE -> {
+                val view = inflater.inflate(R.layout.my_image_message, parent, false)
+                val binding = MyImageMessageBinding.bind(view)
+                ImageMessageViewHolder(binding)
+            }
+            else -> {
+                val view = inflater.inflate(R.layout.other_message, parent, false)
+                val binding = MessageBinding.bind(view)
+                MessageViewHolder(binding)
+            }
         }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: FriendlyMessage) {
-        if (options.snapshots[position].text != null) {
-            (holder as MessageViewHolder).bind(model)
-        } else {
-            (holder as ImageMessageViewHolder).bind(model)
+        if (options.snapshots.size > 0) {
+            if (options.snapshots[position].text != null) {
+                (holder as OtherMessageViewHolder).bind(model)
+            } else {
+                (holder as ImageMessageViewHolder).bind(model)
+            }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (options.snapshots[position].text != null) VIEW_TYPE_TEXT else VIEW_TYPE_IMAGE
+
+        val message = options.snapshots[position]
+        return if (App.userId == message.userId) {
+            if (message.text != null) VIEW_TYPE_MY_TEXT else VIEW_TYPE_MY_IMAGE
+        } else {
+            if (message.text != null) VIEW_TYPE_OTHER_TEXT else VIEW_TYPE_OTHER_IMAGE
+        }
+
+        //return if (options.snapshots[position].text != null) VIEW_TYPE_TEXT else VIEW_TYPE_IMAGE
     }
 
-    inner class MessageViewHolder(private val binding: MessageBinding) : ViewHolder(binding.root) {
+    inner class OtherMessageViewHolder(private val binding: OtherMessageBinding) : ViewHolder(binding.root) {
         fun bind(item: FriendlyMessage) {
 
-            binding.messageTextView.text = item.text
-            setTextColor(item.name, binding.messageTextView)
+            binding.txtOtherMessage.text = item.text
+            setTextColor(item.name, binding.txtOtherMessage)
 
-            binding.messengerTextView.text = item.name ?: ANONYMOUS
+            binding.txtOtherUser.text = item.name ?: ANONYMOUS
             if (item.photoUrl != null) {
                 loadImageIntoView(binding.messengerImageView, item.photoUrl)
             } else {
@@ -92,7 +124,8 @@ class FriendlyMessageAdapter(
         }
     }
 
-    inner class ImageMessageViewHolder(private val binding: ImageMessageBinding) : ViewHolder(binding.root) {
+    inner class ImageMessageViewHolder(private val binding: ImageMessageBinding) :
+        ViewHolder(binding.root) {
         fun bind(item: FriendlyMessage) {
             loadImageIntoView(binding.messageImageView, item.imageUrl!!, false)
 
@@ -136,7 +169,9 @@ class FriendlyMessageAdapter(
 
     companion object {
         const val TAG = "MessageAdapter"
-        const val VIEW_TYPE_TEXT = 1
-        const val VIEW_TYPE_IMAGE = 2
+        const val VIEW_TYPE_MY_TEXT = 1
+        const val VIEW_TYPE_MY_IMAGE = 2
+        const val VIEW_TYPE_OTHER_TEXT = 3
+        const val VIEW_TYPE_OTHER_IMAGE = 4
     }
 }

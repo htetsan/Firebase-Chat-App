@@ -43,7 +43,8 @@ class SignInActivity : AppCompatActivity() {
     // Firebase instance variables
     private lateinit var auth: FirebaseAuth
 
-    private val signIn: ActivityResultLauncher<Intent> = registerForActivityResult(FirebaseAuthUIActivityResultContract(), this::onSignInResult)
+    private val signIn: ActivityResultLauncher<Intent> =
+        registerForActivityResult(FirebaseAuthUIActivityResultContract(), this::onSignInResult)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +84,8 @@ class SignInActivity : AppCompatActivity() {
 
             signIn.launch(signInIntent)
         } else {
-            goToMainActivity()
+            //goToMainActivity()
+            goToCreateConservationActivity()
         }
     }
 
@@ -94,12 +96,14 @@ class SignInActivity : AppCompatActivity() {
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         if (result.resultCode == RESULT_OK) {
             Log.d(TAG, "Sign in successful!")
-            goToMainActivity()
+            //goToMainActivity()
+            goToCreateConservationActivity()
         } else {
             Toast.makeText(
                 this,
                 "There was an error signing in",
-                Toast.LENGTH_LONG).show()
+                Toast.LENGTH_LONG
+            ).show()
 
             val response = result.idpResponse
             if (response == null) {
@@ -113,6 +117,12 @@ class SignInActivity : AppCompatActivity() {
     private fun goToMainActivity() {
         Toast.makeText(this, "Sign in Successful", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
+    private fun goToCreateConservationActivity() {
+        Toast.makeText(this, "Sign in Successful", Toast.LENGTH_LONG).show()
+        startActivity(CreateConservationActivity.newIntent(this))
         finish()
     }
 
