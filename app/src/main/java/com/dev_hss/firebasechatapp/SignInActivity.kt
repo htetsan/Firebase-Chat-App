@@ -15,23 +15,21 @@
  */
 package com.dev_hss.firebasechatapp
 
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import com.dev_hss.firebasechatapp.databinding.ActivitySignInBinding
+import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.IdpResponse
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.ktx.auth
-import com.dev_hss.firebasechatapp.databinding.ActivitySignInBinding
 import com.google.firebase.ktx.Firebase
 
 class SignInActivity : AppCompatActivity() {
@@ -68,16 +66,22 @@ class SignInActivity : AppCompatActivity() {
         super.onStart()
         // If there is no signed in user, launch FirebaseUI
         // Otherwise head to MainActivity
+        val customLayout = AuthMethodPickerLayout.Builder(R.layout.activity_phone_auth)
+            .setPhoneButtonId(R.id.phone_button)
+            .build()
+
         if (Firebase.auth.currentUser == null) {
             // Sign in with FirebaseUI, see docs for more details:
             // https://firebase.google.com/docs/auth/android/firebaseui
             val signInIntent = AuthUI.getInstance()
                 .createSignInIntentBuilder()
+                .setAuthMethodPickerLayout(customLayout)
                 .setLogo(R.mipmap.ic_launcher)
                 .setAvailableProviders(
                     listOf(
-                        AuthUI.IdpConfig.EmailBuilder().build(),
-                        AuthUI.IdpConfig.GoogleBuilder().build(),
+//                        AuthUI.IdpConfig.EmailBuilder().build(),
+//                        AuthUI.IdpConfig.GoogleBuilder().build(),
+                        AuthUI.IdpConfig.PhoneBuilder().build()
                     )
                 )
                 .build()
@@ -90,14 +94,20 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun signIn() {
-        // TODO: implement
+
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         if (result.resultCode == RESULT_OK) {
             Log.d(TAG, "Sign in successful!")
             //goToMainActivity()
-            goToCreateConservationActivity()
+            //goToCreateConservationActivity()
+
+            if (result.idpResponse is PhoneAuthCredential) {
+                val credential = result.idpResponse as PhoneAuthCredential
+                Log.d(TAG, credential.toString())
+                startActivity(PhoneAuthFromCodeSnipActivity.newIntent(this))
+            }
         } else {
             Toast.makeText(
                 this,
@@ -115,13 +125,17 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun goToMainActivity() {
-        Toast.makeText(this, "Sign in Successful", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Sign in Successful! goToMainActivity", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
     private fun goToCreateConservationActivity() {
-        Toast.makeText(this, "Sign in Successful", Toast.LENGTH_LONG).show()
+        Toast.makeText(
+            this,
+            "Sign in Successful! goToCreateConservationActivity",
+            Toast.LENGTH_LONG
+        ).show()
         startActivity(CreateConservationActivity.newIntent(this))
         finish()
     }
@@ -133,4 +147,9 @@ class SignInActivity : AppCompatActivity() {
             return intent
         }
     }
+
+//    override fun onDestroy() {
+//        auth.currentUser = null
+//        super.onDestroy()
+//    }
 }

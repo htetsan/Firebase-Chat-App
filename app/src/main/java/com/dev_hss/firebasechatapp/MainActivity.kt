@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dev_hss.firebasechatapp.databinding.ActivityMainBinding
@@ -16,7 +15,11 @@ import com.dev_hss.firebasechatapp.model.FriendlyMessage
 import com.dev_hss.firebasechatapp.model.UserAccountVO
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -25,6 +28,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,7 +68,6 @@ class MainActivity : AppCompatActivity() {
             return
         } else {
             App.userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }.toString()
-            Toast.makeText(this, App.userId, Toast.LENGTH_SHORT).show()
         }
 
         db = Firebase.database
@@ -74,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isCreateAccount) {
             val userAccount = UserAccountVO(
-                getEmail(), getUserName(), getPhoneNumber()
+                getEmail(), getUserName(), getPhoneNumber(), getPhotoUrl()
             )
             getUserId()?.let {
                 db.reference.child(USERS_CHILD).child(it).setValue(userAccount)
@@ -118,10 +121,11 @@ class MainActivity : AppCompatActivity() {
                 binding.messageEditText.text.toString(),
                 getUserName(),
                 getPhotoUrl(),
-                null /* no image */
+                null, /* no image */
+                Calendar.getInstance().timeInMillis
             )
             db.reference.child("chats").child("chat_id_1").child("messages")
-                .child(generateMessageId()).setValue(friendlyMessage)
+                .child(generateMessageIdWithTime()).setValue(friendlyMessage)
             binding.messageEditText.setText("")
         }
 
@@ -130,28 +134,110 @@ class MainActivity : AppCompatActivity() {
         binding.addMessageImageView.setOnClickListener {
             openDocument.launch(arrayOf("image/*"))
         }
+
+
+        // The test phone number and code should be whitelisted in the console.
+        val phoneNumber = "+959984458969"
+        val smsCode = "123456"
+
+        val firebaseAuth = Firebase.auth
+        val firebaseAuthSettings = firebaseAuth.firebaseAuthSettings
+
+        // Configure faking the auto-retrieval with the whitelisted numbers.
+        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, smsCode)
+
+        val PhoneOptions = PhoneAuthOptions.newBuilder(Firebase.auth).setPhoneNumber(phoneNumber)
+            .setTimeout(10, TimeUnit.SECONDS).setActivity(this)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+                override fun onCodeSent(
+                    verificationId: String,
+                    forceResendingToken: PhoneAuthProvider.ForceResendingToken
+                ) {
+                    // Save the verification id somewhere
+                    // ...
+
+                    // The corresponding whitelisted code above should be used to complete sign-in.
+//                    this@MainActivity.enableUserManuallyInputCode()\
+
+                    Log.d(TAG, "onCodeSent: $verificationId")
+                }
+
+                override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
+                    // Sign in with the credential
+                    // ...
+                }
+
+                override fun onVerificationFailed(e: FirebaseException) {
+                    // ...
+                }
+            }).build()
+        PhoneAuthProvider.verifyPhoneNumber(PhoneOptions)
+
+
+        //
+//    val phoneNum = "+16505554567"
+//    val testVerificationCode = "123456"
+//
+//    // Whenever verification is triggered with the whitelisted number,
+//    // provided it is not set for auto-retrieval, onCodeSent will be triggered.
+//    val options = PhoneAuthOptions.newBuilder(Firebase.auth).setPhoneNumber(phoneNum)
+//        .setTimeout(30L, TimeUnit.SECONDS).setActivity(this)
+//        .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+//
+//            override fun onCodeSent(
+//                verificationId: String, forceResendingToken: PhoneAuthProvider.ForceResendingToken
+//            ) {
+//                // Save the verification id somewhere
+//                // ...
+//
+//                // The corresponding whitelisted code above should be used to complete sign-in.
+//                this@MainActivity.enableUserManuallyInputCode()
+//            }
+//
+//            override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
+//                // Sign in with the credential
+//                // ...
+//            }
+//
+//            override fun onVerificationFailed(e: FirebaseException) {
+//                // ...
+//            }
+//        }).build()
+//    PhoneAuthProvider.verifyPhoneNumber(options)
+//
     }
 
     private fun generateMessageId(): String {
         return UUID.randomUUID().toString()
     }
 
+    private fun generateMessageIdWithTime(): String {
+        return Calendar.getInstance().timeInMillis.toString()
+    }
+
     public override fun onStart() {
         super.onStart()
         // Check if user is signed in.
-        if (auth.currentUser == null) {
-            startActivity(SignInActivity.newIntent(this))
-            finish()
-            return
-        } else {
-            App.userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }.toString()
-            Toast.makeText(this, App.userId, Toast.LENGTH_SHORT).show()
-        }
+//        if (auth.currentUser == null) {
+//            startActivity(SignInActivity.newIntent(this))
+//            finish()
+//            return
+//        }
+//        else {
+//            App.userId = auth.currentUser?.email?.let { createUserIdWithEmail(it) }.toString()
+//            Toast.makeText(this, App.userId, Toast.LENGTH_SHORT).show()
+//        }
     }
 
     public override fun onPause() {
         adapter.stopListening()
         super.onPause()
+    }
+
+    override fun onDestroy() {
+
+        super.onDestroy()
     }
 
     public override fun onResume() {
@@ -178,11 +264,16 @@ class MainActivity : AppCompatActivity() {
     private fun onImageSelected(uri: Uri) {
         Log.d(TAG, "Uri: $uri")
         val user = auth.currentUser
-        val tempMessage =
-            FriendlyMessage(getUserId(), null, getUserName(), getPhotoUrl(), LOADING_IMAGE_URL)
+        val tempMessage = FriendlyMessage(
+            getUserId(),
+            null,
+            getUserName(),
+            getPhotoUrl(),
+            LOADING_IMAGE_URL,
+            Calendar.getInstance().timeInMillis
+        )
         db.reference.child(MESSAGES_CHILD).push().setValue(
-            tempMessage,
-            DatabaseReference.CompletionListener { databaseError, databaseReference ->
+            tempMessage, DatabaseReference.CompletionListener { databaseError, databaseReference ->
                 if (databaseError != null) {
                     Log.w(
                         TAG, "Unable to write message to database.", databaseError.toException()
@@ -206,8 +297,14 @@ class MainActivity : AppCompatActivity() {
         ) { taskSnapshot -> // After the image loads, get a public downloadUrl for the image
             // and add it to the message.
             taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener { uri ->
-                val friendlyMessage =
-                    FriendlyMessage(null, getUserName(), getPhotoUrl(), uri.toString())
+                val friendlyMessage = FriendlyMessage(
+                    null,
+                    null,
+                    getUserName(),
+                    getPhotoUrl(),
+                    uri.toString(),
+                    Calendar.getInstance().timeInMillis
+                )
                 db.reference.child(MESSAGES_CHILD).child(key!!).setValue(friendlyMessage)
             }
         }.addOnFailureListener(this) { e ->
@@ -265,6 +362,37 @@ class MainActivity : AppCompatActivity() {
             userId
         } else ANONYMOUS
     }
+//
+//    val phoneNum = "+16505554567"
+//    val testVerificationCode = "123456"
+//
+//    // Whenever verification is triggered with the whitelisted number,
+//    // provided it is not set for auto-retrieval, onCodeSent will be triggered.
+//    val options = PhoneAuthOptions.newBuilder(Firebase.auth).setPhoneNumber(phoneNum)
+//        .setTimeout(30L, TimeUnit.SECONDS).setActivity(this)
+//        .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+//
+//            override fun onCodeSent(
+//                verificationId: String, forceResendingToken: PhoneAuthProvider.ForceResendingToken
+//            ) {
+//                // Save the verification id somewhere
+//                // ...
+//
+//                // The corresponding whitelisted code above should be used to complete sign-in.
+//                this@MainActivity.enableUserManuallyInputCode()
+//            }
+//
+//            override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
+//                // Sign in with the credential
+//                // ...
+//            }
+//
+//            override fun onVerificationFailed(e: FirebaseException) {
+//                // ...
+//            }
+//        }).build()
+//    PhoneAuthProvider.verifyPhoneNumber(options)
+//
 
 
     companion object {

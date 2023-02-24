@@ -1,34 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="10dp">
-
-    <TextView
-        android:id="@+id/messageTextView"
-        android:layout_width="wrap_content"
-        android:maxWidth="250dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:padding="10dp"
-        android:background="@drawable/rounded_message_gray"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/black"
-        app:layout_constraintStart_toEndOf="@id/messengerImageView"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="This is a message" />
-
-    <TextView
-        android:id="@+id/messengerTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="10dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        app:layout_constraintStart_toStartOf="@id/messageTextView"
-        app:layout_constraintTop_toBottomOf="@id/messageTextView"
-        tools:text="FirstName LastName" />
+    android:layout_margin="4dp"
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/messengerImageView"
@@ -40,6 +16,46 @@
         app:layout_constraintEnd_toStartOf="@id/messageTextView"
         app:layout_constraintStart_toStartOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/messageTextView"
+        android:layout_width="wrap_content"
+        android:maxWidth="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:padding="10dp"
+        android:layout_toEndOf="@id/messengerImageView"
+        android:background="@drawable/rounded_message_gray"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/black"
+        app:layout_constraintStart_toEndOf="@id/messengerImageView"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="This is a message" />
+
+    <TextView
+        android:id="@+id/messengerTextView"
+        android:layout_below="@id/messageTextView"
+        android:layout_toEndOf="@id/messengerImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="10dp"
+        android:visibility="gone"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        app:layout_constraintStart_toStartOf="@id/messageTextView"
+        app:layout_constraintTop_toBottomOf="@id/messageTextView"
+        tools:text="FirstName LastName" />
+
+    <TextView
+        android:id="@+id/messagedTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_alignBottom="@id/messageTextView"
+        android:layout_toEndOf="@id/messageTextView"
+        android:text="12:00 PM"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
+
+</RelativeLayout>
 
 

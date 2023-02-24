@@ -16,7 +16,6 @@
 package com.dev_hss.firebasechatapp
 
 import android.graphics.Color
-import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -25,17 +24,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.dev_hss.firebasechatapp.FriendlyMessageAdapter.Companion.VIEW_TYPE_OTHER_TEXT
 import com.dev_hss.firebasechatapp.MainActivity.Companion.ANONYMOUS
-import com.dev_hss.firebasechatapp.R
 import com.dev_hss.firebasechatapp.databinding.ImageMessageBinding
 import com.dev_hss.firebasechatapp.databinding.MessageBinding
 import com.dev_hss.firebasechatapp.databinding.MyImageMessageBinding
 import com.dev_hss.firebasechatapp.databinding.MyMessageBinding
-import com.dev_hss.firebasechatapp.databinding.OtherMessageBinding
+import com.dev_hss.firebasechatapp.model.FriendlyMessage
+import com.dev_hss.firebasechatapp.utils.DateUtils
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
-import com.dev_hss.firebasechatapp.model.FriendlyMessage
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
@@ -62,15 +59,15 @@ class FriendlyMessageAdapter(
             VIEW_TYPE_MY_TEXT -> {
                 val view = inflater.inflate(R.layout.my_message, parent, false)
                 val binding = MyMessageBinding.bind(view)
-                ImageMessageViewHolder(binding)
+                MyMessageViewHolder(binding)
             }
             VIEW_TYPE_MY_IMAGE -> {
                 val view = inflater.inflate(R.layout.my_image_message, parent, false)
                 val binding = MyImageMessageBinding.bind(view)
-                ImageMessageViewHolder(binding)
+                MyImageMessageViewHolder(binding)
             }
             else -> {
-                val view = inflater.inflate(R.layout.other_message, parent, false)
+                val view = inflater.inflate(R.layout.message, parent, false)
                 val binding = MessageBinding.bind(view)
                 MessageViewHolder(binding)
             }
@@ -79,10 +76,19 @@ class FriendlyMessageAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: FriendlyMessage) {
         if (options.snapshots.size > 0) {
+            Log.d(TAG, "onBindViewHolder==> ${options.snapshots}")
             if (options.snapshots[position].text != null) {
-                (holder as MessageViewHolder).bind(model)
+                if (App.userId == options.snapshots[position].userId) {
+                    (holder as MyMessageViewHolder).bind(model)
+                } else {
+                    (holder as  MessageViewHolder).bind(model)
+                }
             } else {
-                (holder as ImageMessageViewHolder).bind(model)
+                if (App.userId == options.snapshots[position].userId) {
+                    (holder as MyImageMessageViewHolder).bind(model)
+                } else {
+                    (holder as ImageMessageViewHolder).bind(model)
+                }
             }
         }
     }
@@ -101,6 +107,8 @@ class FriendlyMessageAdapter(
 
     inner class MessageViewHolder(private val binding: MessageBinding) : ViewHolder(binding.root) {
         fun bind(item: FriendlyMessage) {
+
+            Log.d(TAG, "MessageViewHolder:bind::: $item")
 
             binding.messageTextView.text = item.text
             setTextColor(item.name, binding.messageTextView)
@@ -142,20 +150,51 @@ class FriendlyMessageAdapter(
     private fun loadImageIntoView(view: ImageView, url: String, isCircular: Boolean = true) {
         if (url.startsWith("gs://")) {
             val storageReference = Firebase.storage.getReferenceFromUrl(url)
-            storageReference.downloadUrl
-                .addOnSuccessListener { uri ->
-                    val downloadUrl = uri.toString()
-                    loadWithGlide(view, downloadUrl, isCircular)
-                }
-                .addOnFailureListener { e ->
-                    Log.w(
-                        TAG,
-                        "Getting download url was not successful.",
-                        e
-                    )
-                }
+            storageReference.downloadUrl.addOnSuccessListener { uri ->
+                val downloadUrl = uri.toString()
+                loadWithGlide(view, downloadUrl, isCircular)
+            }.addOnFailureListener { e ->
+                Log.w(
+                    TAG, "Getting download url was not successful.", e
+                )
+            }
         } else {
             loadWithGlide(view, url, isCircular)
+        }
+    }
+
+    inner class MyMessageViewHolder(private val binding: MyMessageBinding) :
+        ViewHolder(binding.root) {
+        fun bind(item: FriendlyMessage) {
+
+            binding.messageTextView.text = item.text
+            setTextColor(item.name, binding.messageTextView)
+            binding.messagedTime.text = DateUtils.fromMillisToTimeString(item.time)
+        }
+
+
+        private fun setTextColor(userName: String?, textView: TextView) {
+            if (userName != ANONYMOUS && currentUserName == userName && userName != null) {
+                textView.setBackgroundResource(R.drawable.rounded_message_blue)
+                textView.setTextColor(Color.WHITE)
+            } else {
+                textView.setBackgroundResource(R.drawable.rounded_message_gray)
+                textView.setTextColor(Color.BLACK)
+            }
+        }
+    }
+
+    inner class MyImageMessageViewHolder(private val binding: MyImageMessageBinding) :
+        ViewHolder(binding.root) {
+        fun bind(item: FriendlyMessage) {
+            loadImageIntoView(binding.messageImageView, item.imageUrl!!, false)
+
+            binding.messengerTextView.text = item.name ?: ANONYMOUS
+//            if (item.photoUrl != null) {
+//                loadImageIntoView(binding.messengerImageView, item.photoUrl)
+//            } else {
+//                binding.messengerImageView.setImageResource(R.drawable.ic_account_circle_black_36dp)
+//            }
         }
     }
 

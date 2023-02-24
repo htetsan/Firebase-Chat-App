@@ -21,4 +21,7 @@ data class FriendlyMessage(
     val name: String? = null,
     val photoUrl: String? = null,
     val imageUrl: String? = null,
-)
+    val time: Long? = 0L
+) {
+
+}

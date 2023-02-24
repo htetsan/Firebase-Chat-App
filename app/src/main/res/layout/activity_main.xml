@@ -56,8 +56,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messageRecyclerView"
         android:layout_width="match_parent"
+        android:clipToPadding="false"
+        tools:listitem="@layout/my_message"
+        tools:itemCount="14"
         android:layout_height="match_parent"
         android:layout_above="@+id/linearLayout"
         android:background="@android:color/white"
-        android:paddingHorizontal="16dp" />
+        android:paddingBottom="2dp"
+        android:paddingHorizontal="8dp" />
 </RelativeLayout>

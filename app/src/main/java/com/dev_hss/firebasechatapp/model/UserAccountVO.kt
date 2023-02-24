@@ -18,5 +18,6 @@ package com.dev_hss.firebasechatapp.model
 data class UserAccountVO(
     val email: String? = null,
     val name: String? = null,
-    val phoneNumber: String? = null
+    val phoneNumber: String? = null,
+    val photoUrl: String? = null
 )
