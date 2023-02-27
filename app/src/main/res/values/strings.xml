@@ -12,4 +12,23 @@
     <string name="fresh_config">Fresh Config</string>
     <string name="cause_crash">Cause Crash</string>
     <string name="banner_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+
+
+    <string name="lbl_splash_first_text">Text your friends and share moments</string>
+    <string name="lbl_splash_second_text">End-to-end secured messaging app with Social Elements</string>
+    <string name="lbl_sign_up">Sign Up</string>
+    <string name="lbl_login">Login</string>
+    <string name="lbl_welcome">Welcome !</string>
+    <string name="lbl_enter_your_password">Enter your password</string>
+    <string name="lbl_enter_your_phone_number">Enter Your Phone Number</string>
+    <string name="lbl_forget_password">Forget Password?</string>
+    <string name="lbl_hi">Hi !</string>
+    <string name="lbl_create_a_new_account">Create a new account</string>
+    <string name="lbl_get_otp">Get OTP</string>
+    <string name="lbl_resend_code">Resend Code</string>
+    <string name="lbl_don_t_receive_the_otp">Don\'t receive the OTP?</string>
+    <string name="lbl_verify">Verify</string>
+    <string name="lbl_login_to_continue">Login to continue</string>
+
+
 </resources>

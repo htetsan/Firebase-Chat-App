@@ -1,8 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/sign_in_layout"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical">
-</FrameLayout>
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white_dark">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/btnOTPVerifyPageBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_add_black_24dp" />
+
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginTop="@dimen/margin_medium_2"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_medium_2"
+
+            android:orientation="vertical">
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/lbl_hi"
+                android:textColor="@color/text_title_color"
+                android:textSize="@dimen/text_title_size"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvSubTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvTitle"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:text="@string/lbl_create_a_new_account"
+                android:textColor="@color/text_sub_title_color"
+                android:textSize="@dimen/text_regular_2x" />
+
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ivLoginLogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/llTextInputLayout"
+                android:layout_below="@+id/tvSubTitle"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/otp_pic" />
+
+            <LinearLayout
+                android:id="@+id/llTextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/txtInputPhoneNumber"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:hint="@string/lbl_enter_your_phone_number"
+                        android:textColorHint="@color/hint_color"
+                        android:theme="@style/TextInputLayout_custom"
+                        app:endIconMode="clear_text"
+                        app:hintTextColor="@android:color/darker_gray">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/edtPhoneNo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:imeOptions="actionDone"
+                            android:inputType="phone"
+                            android:textColor="@color/edit_text_color"
+                            android:textSize="@dimen/text_regular_2x"
+                            tools:text="092345667" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnGetOTP"
+                        android:layout_width="76dp"
+                        android:layout_height="37dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_margin="@dimen/margin_medium_2"
+                        android:background="@drawable/login_btn_disable_bg"
+                        android:enabled="false"
+                        android:text="@string/lbl_get_otp"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_small"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <in.aabhasjindal.otptextview.OtpTextView
+                    android:id="@+id/otpView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/margin_medium_3"
+                    android:elevation="@dimen/margin_small"
+                    android:textColor="@color/custom_color"
+                    app:box_margin="@dimen/margin_medium"
+                    app:height="40dp"
+                    app:length="4"
+                    app:otp_box_background="@drawable/otp_box_bg"
+                    app:otp_text_size="@dimen/text_regular_2x"
+                    app:width="40dp" />
+                <!--            app:otp="1234"-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_medium_2"
+                    android:layout_marginBottom="@dimen/margin_medium_2"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lbl_don_t_receive_the_otp"
+                        android:textColor="@color/grey"
+                        android:textSize="@dimen/text_regular" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/lbl_resend_code"
+                        android:textColor="@color/custom_color"
+                        android:textSize="@dimen/text_regular"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnVerify"
+                    android:layout_width="@dimen/btn_width"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/margin_medium_2"
+                    android:background="@drawable/login_btn_disable_bg"
+                    android:enabled="false"
+                    android:text="@string/lbl_verify"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_regular"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </RelativeLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

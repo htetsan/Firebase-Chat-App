@@ -235,13 +235,10 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
-    override fun onDestroy() {
-
-        super.onDestroy()
-    }
-
     public override fun onResume() {
-        adapter.startListening()
+        if (auth.currentUser != null) {
+            adapter.startListening()
+        }
         super.onResume()
     }
 

@@ -8,4 +8,78 @@
     <color name="colorGray">#dedede</color>
     <color name="colorDarkGray">#b4b4b4</color>
     <color name="colorBlue">#2962FF</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="white_dark">#FFFFFF</color>
+    <color name="custom_color">#113A5D</color>
+    <color name="custom_color_dark">#001433</color>
+
+    <color name="text_color">#062743</color>
+
+
+    <color name="color1">#E5E7FA</color>
+    <color name="color2">#F9E8F8</color>
+    <color name="color3">#DAF7F3</color>
+    <color name="color4">#DBF9D9</color>
+    <color name="color5">#F9F8E3</color>
+    <color name="color6">#F9DDD9</color>
+
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#BDBDBD</color>
+
+    <color name="text_white_ish">#eee</color>
+
+    <color name="white_full">#ffffff</color>
+    <color name="light_gray">#e7e7e7</color>
+    <color name="blue">#0000FF</color>
+    <color name="dark">#000015</color>
+
+    <color name="blackLight1">#1a1a1a</color>
+    <color name="blackLight2">#262626</color>
+    <color name="blackLight3">#333333</color>
+    <color name="blackLight4">#404040</color>
+    <color name="blackLight5">#6E6C6C</color>
+
+    <color name="red">#ff3300</color>
+    <color name="whiteDark1">#f2f2f2</color>
+    <color name="whiteDark10">#808080</color>
+    <color name="whiteDark2">#e6e6e6</color>
+    <color name="whiteDark3">#d9d9d9</color>
+    <color name="whiteDark4">#cccccc</color>
+    <color name="whiteDark5">#bfbfbf</color>
+    <color name="whiteDark6">#b3b3b3</color>
+    <color name="whiteDark7">#a6a6a6</color>
+    <color name="whiteDark8">#999999</color>
+    <color name="whiteDark9">#8c8c8c</color>
+
+    <color name="text_color_light">#1c253a</color>
+
+    <color name="blue_color">#03a9f4</color>
+    <color name="blue_dark">#0288d1</color>
+    <color name="light_blue">#4fc3f7</color>
+    <color name="blue_accent">#80d8ff</color>
+    <color name="purple">#866CEF</color>
+
+    <color name="chip_selected_color">#4E57AA</color>
+    <color name="chip_unselected_color">@color/white</color>
+    <color name="create_shelves_btn_color">#5F6ACF</color>
+
+    <color name="btn_color">#FF007AC8</color>
+    <color name="progress_bar_color">#396CE8</color>
+
+    <color name="text_title_color">#113A5D</color>
+    <color name="text_sub_title_color">#73113A5D</color>
+
+    <color name="hint_color">#888888</color>
+    <color name="edit_text_color">#062743</color>
+
+    <color name="contact_page_bg">#5DEEEEEE</color>
+
 </resources>
