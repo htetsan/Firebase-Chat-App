@@ -107,7 +107,7 @@
                             android:inputType="phone"
                             android:textColor="@color/edit_text_color"
                             android:textSize="@dimen/text_regular_2x"
-                            tools:text="092345667" />
+                            tools:text="+959984458969" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 

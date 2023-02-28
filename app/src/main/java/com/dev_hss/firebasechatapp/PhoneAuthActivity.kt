@@ -1,14 +1,15 @@
 package com.dev_hss.firebasechatapp
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import java.util.concurrent.TimeUnit
 
-class PhoneAuthActivity : AppCompatActivity() {
+object PhoneAuthActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
     private lateinit var mCallbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
@@ -46,13 +47,22 @@ class PhoneAuthActivity : AppCompatActivity() {
     }
 
     private fun sendVerificationCode(phoneNumber: String) {
-        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-            phoneNumber,
-            60,
-            TimeUnit.SECONDS,
-            this,
-            mCallbacks
-        )
+
+        val options = PhoneAuthOptions.newBuilder(mAuth)
+            .setPhoneNumber(phoneNumber)       // Phone number to verify
+            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(this)                 // Activity (for callback binding)
+            .setCallbacks(mCallbacks) // OnVerificationStateChangedCallbacks
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+
+//        PhoneAuthProvider.getInstance().verifyPhoneNumber(
+//            phoneNumber,
+//            60,
+//            TimeUnit.SECONDS,
+//            this,
+//            mCallbacks
+//        )
     }
 
     private fun verifyCode(code: String) {

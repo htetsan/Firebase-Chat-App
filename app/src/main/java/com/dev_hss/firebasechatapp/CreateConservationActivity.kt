@@ -2,8 +2,8 @@ package com.dev_hss.firebasechatapp
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.dev_hss.firebasechatapp.databinding.ActivityCreateconversationBinding
 
 class CreateConservationActivity : AppCompatActivity() {
@@ -12,8 +12,12 @@ class CreateConservationActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CreateConservationActivity"
-        fun newIntent(context: Context): Intent {
+        private const val BUNDLE_PHONE_NUMBER = "BUNDLE_PHONE_NUMBER"
+        private const val BUNDLE_USER_ID = "BUNDLE_USER_ID"
+        fun newIntent(context: Context, phoneNum: String, userIdParam: String): Intent {
             val intent = Intent(context, CreateConservationActivity::class.java)
+            intent.putExtra(BUNDLE_PHONE_NUMBER, phoneNum)
+            intent.putExtra(BUNDLE_USER_ID, userIdParam)
             return intent
         }
     }

@@ -15,6 +15,7 @@
  */
 package com.dev_hss.firebasechatapp
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -31,10 +32,14 @@ import com.dev_hss.firebasechatapp.databinding.ActivitySignInBinding
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import java.util.concurrent.TimeUnit
 
 class SignInActivity : AppCompatActivity() {
     private lateinit var mBinding: ActivitySignInBinding
@@ -196,34 +201,23 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun clickListener() {
-        // errorButton.setOnClickListener { otpTextView?.showError() }
 
         mBinding.btnGetOTP.setOnClickListener {
             // mBinding.mPresenter.onTapGetOTPCode(this, mBinding.edtPhoneNo.text.toString())
-            PhoneAuth.getOTP(this, mBinding.edtPhoneNo.text.toString(),
+            sendVerificationCode(this, mBinding.edtPhoneNo.text.toString(),
+                //PhoneAuth.sendVerificationCode(this, "+959984458969",
                 onSuccess = {
                     showMessage(this, "Auth Success")
-                },
-                onFailure = {
+                }, onFailure = {
                     showMessage(this, it)
-                }
-            )
+                    Log.d(TAG, "clickListener:onFailure:: $it")
+                })
         }
 
 
 
         mBinding.btnVerify.setOnClickListener {
-            // otpView?.showSuccess()
 
-            //   FirebaseAuth.getInstance().signOut()
-
-
-//            if(!isValidMobile(mBinding.edtPhoneNo.text.toString()))
-//            {
-//                mBinding.edtPhoneNo.error = "Your phone number format is wrong."
-//                mBinding.edtPhoneNo.isFocusable = true
-//
-//            } else
             if (!(otpCode == OTP_DEMO_ONE_DIGIT || otpCode == OTP_DEMO_TWO_DIGIT)) {
                 val snackbar =
                     Snackbar.make(window.decorView, "The OTP Code is wrong.", Snackbar.LENGTH_LONG)
@@ -238,24 +232,95 @@ class SignInActivity : AppCompatActivity() {
                 // display the snackbar
                 snackbar.show()
             } else {
-//                mPresenter.onTapVerify(
-//                    this, mBinding.edtPhoneNo.text.toString(),
-//                    otpCode, onSuccess = {
-//                        startActivity(
-//                            SignUpActivity.newIntent(
-//                                this, mBinding.edtPhoneNo.text.toString(),
-//                                it
-//                            )
-//                        )
-//                    },
-//                    onFailure = {
-//                        showError(it)
-//                    }
-//                  )
+                PhoneAuth.verifyOTP(this,
+                    mBinding.edtPhoneNo.text.toString(),
+                    otpCode,
+                    onSuccess = {
+                        startActivity(
+                            CreateConservationActivity.newIntent(
+                                this, mBinding.edtPhoneNo.text.toString(), it
+                            )
+                        )
+                    },
+                    onFailure = {
+                        showMessage(this, it)
+                    })
                 // startActivity(SignUpActivity.newIntent(this, edtPhoneNo.text.toString()))
             }
 
         }
+    }
+
+    fun sendVerificationCode(
+        context: Activity, phoneNumber: String, onSuccess: () -> Unit, onFailure: (String) -> Unit
+    ) {
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phoneNumber)       // Phone number to verify
+            .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
+            .setActivity(context)                 // Activity (for callback binding)
+            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    auth.signInWithCredential(credential).addOnCompleteListener(context) { task ->
+                        if (task.isSuccessful) {
+                            // Phone authentication successful
+                            val user = task.result?.user
+                            Log.d(
+                                "TAG",
+                                "signInWithPhoneAuthCredential:success:: ${task.result.additionalUserInfo.toString()}"
+                            )
+                            onSuccess()
+                            // Proceed with Firebase private chat
+                        } else {
+                            // Handle authentication failure
+                            Log.d(
+                                "TAG",
+                                "signInWithPhoneAuthCredential:fail:: ${task.exception.toString()}"
+                            )
+                            onFailure(task.exception.toString())
+
+                        }
+                    }
+                }
+
+                override fun onVerificationFailed(e: FirebaseException) {
+                    // Handle verification failure
+                    Log.d(
+                        "TAG", "onVerificationFailed:: $e"
+                    )
+                }
+
+                override fun onCodeSent(
+                    verificationId: String, token: PhoneAuthProvider.ForceResendingToken
+                ) {
+
+//                    val verificationCode = "1234"
+//                    val credential =
+//                        PhoneAuthProvider.getCredential(verificationId, verificationCode)
+//
+//                    // Sign in with the PhoneAuthCredential
+//
+//                    mFirebaseAuth.signInWithCredential(credential)
+//                        .addOnCompleteListener { task: Task<AuthResult?> ->
+//                            if (task.isSuccessful) {
+//                                // Phone number verification succeeded
+//                                onSuccess()
+//                                //showMessage(context, "task is successful")
+//                            } else {
+//                                // Phone number verification failed
+//                                // ...
+//                            }
+//                        }
+                    val intent = Intent(this@SignInActivity, CreateConservationActivity::class.java)
+                    intent.putExtra("OTP", verificationId)
+                    intent.putExtra("resendToken", token)
+                    intent.putExtra("phoneNumber", phoneNumber)
+                    mVerificationId = verificationId
+                    //onFailure("$verificationId ,  $token")
+
+                }
+            }) // OnVerificationStateChangedCallbacks
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
@@ -297,7 +362,7 @@ class SignInActivity : AppCompatActivity() {
             "Sign in Successful! goToCreateConservationActivity",
             Toast.LENGTH_LONG
         ).show()
-        startActivity(CreateConservationActivity.newIntent(this))
+        startActivity(CreateConservationActivity.newIntent(this, "", ""))
         finish()
     }
 

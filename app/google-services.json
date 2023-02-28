@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "125688590737",
+    "firebase_url": "https://fir-chat-app-a8285-default-rtdb.firebaseio.com",
     "project_id": "fir-chat-app-a8285",
     "storage_bucket": "fir-chat-app-a8285.appspot.com"
   },
@@ -22,13 +23,13 @@
           }
         },
         {
-          "client_id": "125688590737-j56nmorists6ndrooubfb692781feupi.apps.googleusercontent.com",
+          "client_id": "125688590737-v6hg9h2n85umt2qbm4oa9iaacrl70jpk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDKkjTvd44mZ4iyhRcykfgkWtzL-ysIYAQ"
+          "current_key": "AIzaSyAPb2H_e9n0O9wiGtxag_YBm9Zfdcml96Y"
         }
       ],
       "services": {
