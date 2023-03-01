@@ -194,10 +194,13 @@ object PhoneAuth {
                         UserProfileChangeRequest.Builder().setDisplayName("${phoneNumber}User")
                             .build()
                     )
+
                     var userId: String = mFirebaseAuth.currentUser?.uid ?: ""
+                    Log.d("TAG", "Logged In as $userId")
                     onSuccess(userId)
 
                 } else {
+                    Log.d("TAG", "verifyOTP: ${it.exception?.message}")
                     onFailure(it.exception?.message ?: "Please check internet connection")
                 }
             }

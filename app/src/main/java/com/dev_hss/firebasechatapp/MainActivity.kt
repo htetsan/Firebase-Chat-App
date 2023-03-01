@@ -15,11 +15,7 @@ import com.dev_hss.firebasechatapp.model.FriendlyMessage
 import com.dev_hss.firebasechatapp.model.UserAccountVO
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.database.FirebaseRecyclerOptions
-import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthOptions
-import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -28,7 +24,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
@@ -135,45 +130,45 @@ class MainActivity : AppCompatActivity() {
             openDocument.launch(arrayOf("image/*"))
         }
 
-
-        // The test phone number and code should be whitelisted in the console.
-        val phoneNumber = "+959984458969"
-        val smsCode = "123456"
-
-        val firebaseAuth = Firebase.auth
-        val firebaseAuthSettings = firebaseAuth.firebaseAuthSettings
-
-        // Configure faking the auto-retrieval with the whitelisted numbers.
-        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, smsCode)
-
-        val PhoneOptions = PhoneAuthOptions.newBuilder(Firebase.auth).setPhoneNumber(phoneNumber)
-            .setTimeout(10, TimeUnit.SECONDS).setActivity(this)
-            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                override fun onCodeSent(
-                    verificationId: String,
-                    forceResendingToken: PhoneAuthProvider.ForceResendingToken
-                ) {
-                    // Save the verification id somewhere
-                    // ...
-
-                    // The corresponding whitelisted code above should be used to complete sign-in.
-//                    this@MainActivity.enableUserManuallyInputCode()\
-
-                    Log.d(TAG, "onCodeSent: $verificationId")
-                }
-
-                override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
-                    // Sign in with the credential
-                    // ...
-                }
-
-                override fun onVerificationFailed(e: FirebaseException) {
-                    // ...
-                }
-            }).build()
-        PhoneAuthProvider.verifyPhoneNumber(PhoneOptions)
-
+//
+//        // The test phone number and code should be whitelisted in the console.
+//        val phoneNumber = "+959984458969"
+//        val smsCode = "123456"
+//
+//        val firebaseAuth = Firebase.auth
+//        val firebaseAuthSettings = firebaseAuth.firebaseAuthSettings
+//
+//        // Configure faking the auto-retrieval with the whitelisted numbers.
+//        firebaseAuthSettings.setAutoRetrievedSmsCodeForPhoneNumber(phoneNumber, smsCode)
+//
+//        val PhoneOptions = PhoneAuthOptions.newBuilder(Firebase.auth).setPhoneNumber(phoneNumber)
+//            .setTimeout(10, TimeUnit.SECONDS).setActivity(this)
+//            .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+//
+//                override fun onCodeSent(
+//                    verificationId: String,
+//                    forceResendingToken: PhoneAuthProvider.ForceResendingToken
+//                ) {
+//                    // Save the verification id somewhere
+//                    // ...
+//
+//                    // The corresponding whitelisted code above should be used to complete sign-in.
+////                    this@MainActivity.enableUserManuallyInputCode()\
+//
+//                    Log.d(TAG, "onCodeSent: $verificationId")
+//                }
+//
+//                override fun onVerificationCompleted(phoneAuthCredential: PhoneAuthCredential) {
+//                    // Sign in with the credential
+//                    // ...
+//                }
+//
+//                override fun onVerificationFailed(e: FirebaseException) {
+//                    // ...
+//                }
+//            }).build()
+//        PhoneAuthProvider.verifyPhoneNumber(PhoneOptions)
+//
 
         //
 //    val phoneNum = "+16505554567"

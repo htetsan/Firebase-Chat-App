@@ -136,7 +136,7 @@
                     android:textColor="@color/custom_color"
                     app:box_margin="@dimen/margin_medium"
                     app:height="40dp"
-                    app:length="4"
+                    app:length="6"
                     app:otp_box_background="@drawable/otp_box_bg"
                     app:otp_text_size="@dimen/text_regular_2x"
                     app:width="40dp" />
@@ -157,12 +157,14 @@
                         android:textColor="@color/grey"
                         android:textSize="@dimen/text_regular" />
 
-                    <androidx.appcompat.widget.AppCompatTextView
+                    <androidx.appcompat.widget.AppCompatButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/btnResendCode"
                         android:text="@string/lbl_resend_code"
                         android:textColor="@color/custom_color"
                         android:textSize="@dimen/text_regular"
+                        android:layout_marginStart="10dp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
