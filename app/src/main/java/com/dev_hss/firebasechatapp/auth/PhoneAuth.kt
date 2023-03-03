@@ -195,7 +195,7 @@ object PhoneAuth {
                             .build()
                     )
 
-                    var userId: String = mFirebaseAuth.currentUser?.uid ?: ""
+                    val userId: String = mFirebaseAuth.currentUser?.uid ?: ""
                     Log.d("TAG", "Logged In as $userId")
                     onSuccess(userId)
 

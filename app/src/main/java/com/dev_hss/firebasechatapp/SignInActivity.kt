@@ -22,13 +22,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isNotEmpty
 import com.dev_hss.firebasechatapp.auth.PhoneAuth
 import com.dev_hss.firebasechatapp.databinding.ActivitySignInBinding
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.*
@@ -107,10 +105,14 @@ class SignInActivity : AppCompatActivity() {
                 mToken = token
             }
         }
+        initialize()
         setUpOTP()
-
         setUpUI()
         clickListener()
+    }
+
+    private fun initialize() {
+        sendVerificationCode(this, mBinding.edtPhoneNo.text.toString())
     }
 
     private fun setUpOTP() {
@@ -265,10 +267,10 @@ class SignInActivity : AppCompatActivity() {
 
     private fun clickListener() {
 
-        mBinding.btnGetOTP.setOnClickListener {
-            // mBinding.mPresenter.onTapGetOTPCode(this, mBinding.edtPhoneNo.text.toString())
-            sendVerificationCode(this, mBinding.edtPhoneNo.text.toString())
-        }
+//        mBinding.btnGetOTP.setOnClickListener {
+//            // mBinding.mPresenter.onTapGetOTPCode(this, mBinding.edtPhoneNo.text.toString())
+//            sendVerificationCode(this, mBinding.edtPhoneNo.text.toString())
+//        }
 
         mBinding.btnResendCode.setOnClickListener {
             Log.d(TAG, "phoneNo: ${mBinding.edtPhoneNo.text.toString()}")
@@ -338,48 +340,48 @@ class SignInActivity : AppCompatActivity() {
         PhoneAuthProvider.verifyPhoneNumber(optionsBuilder.build())
     }
 
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-        if (result.resultCode == RESULT_OK) {
-            Log.d(TAG, "Sign in successful!")
-            //goToMainActivity()
-            //goToCreateConservationActivity()
+//    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+//        if (result.resultCode == RESULT_OK) {
+//            Log.d(TAG, "Sign in successful!")
+//            //goToMainActivity()
+//            //goToCreateConservationActivity()
+//
+//            if (result.idpResponse is PhoneAuthCredential) {
+//                val credential = result.idpResponse as PhoneAuthCredential
+//                Log.d(TAG, credential.toString())
+//                //startActivity(PhoneAuthFromCodeSnipActivity.newIntent(this))
+//            }
+//        } else {
+//            Toast.makeText(
+//                this,
+//                "There was an error signing in",
+//                Toast.LENGTH_LONG
+//            ).show()
+//
+//            val response = result.idpResponse
+//            if (response == null) {
+//                Log.w(TAG, "Sign in canceled")
+//            } else {
+//                Log.w(TAG, "Sign in error", response.error)
+//            }
+//        }
+//    }
 
-            if (result.idpResponse is PhoneAuthCredential) {
-                val credential = result.idpResponse as PhoneAuthCredential
-                Log.d(TAG, credential.toString())
-                //startActivity(PhoneAuthFromCodeSnipActivity.newIntent(this))
-            }
-        } else {
-            Toast.makeText(
-                this,
-                "There was an error signing in",
-                Toast.LENGTH_LONG
-            ).show()
+//    private fun goToMainActivity() {
+//        Toast.makeText(this, "Sign in Successful! goToMainActivity", Toast.LENGTH_LONG).show()
+//        startActivity(Intent(this, MainActivity::class.java))
+//        finish()
+//    }
 
-            val response = result.idpResponse
-            if (response == null) {
-                Log.w(TAG, "Sign in canceled")
-            } else {
-                Log.w(TAG, "Sign in error", response.error)
-            }
-        }
-    }
-
-    private fun goToMainActivity() {
-        Toast.makeText(this, "Sign in Successful! goToMainActivity", Toast.LENGTH_LONG).show()
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
-    }
-
-    private fun goToCreateConservationActivity() {
-        Toast.makeText(
-            this,
-            "Sign in Successful! goToCreateConservationActivity",
-            Toast.LENGTH_LONG
-        ).show()
-        startActivity(CreateConservationActivity.newIntent(this, "", ""))
-        finish()
-    }
+//    private fun goToCreateConservationActivity() {
+//        Toast.makeText(
+//            this,
+//            "Sign in Successful! goToCreateConservationActivity",
+//            Toast.LENGTH_LONG
+//        ).show()
+//        startActivity(CreateConservationActivity.newIntent(this, "", ""))
+//        finish()
+//    }
 
     companion object {
         private const val TAG = "SignInActivity"
